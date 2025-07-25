@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Setup>
+	<Product Name="AnimatedWallpaperApp"
+             Manufacturer="Your Name or Company"
+             Version="1.0.0.0"
+             Language="1033"
+             Id="*"
+             UpgradeCode="{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}">
+
+		<!-- Defines the files to be installed -->
+		<Files>
+			<File Source="$(SolutionDir)\AnimatedWallpaperApp\bin\Release\AnimatedWallpaperApp.exe"
+                  Destination="INSTALLFOLDER\AnimatedWallpaperApp.exe" />
+		</Files>
+
+		<!-- Create a shortcut in the start menu -->
+		<Shortcuts>
+			<Shortcut Target="INSTALLFOLDER\AnimatedWallpaperApp.exe"
+                      Name="Animated Wallpaper App"
+                      Directory="DesktopFolder" />
+		</Shortcuts>
+
+		<!-- Define folders -->
+		<Directories>
+			<Directory Id="DesktopFolder" Name="Desktop" />
+		</Directories>
+	</Product>
+</Setup>
