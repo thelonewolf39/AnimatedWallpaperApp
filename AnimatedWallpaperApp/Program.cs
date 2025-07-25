@@ -55,8 +55,8 @@ class Program
 public class UpdateChecker
 {
     private const string CurrentVersion = "1.0.0";  // The current version of the app
-    private const string VersionUrl = "https://example.com/version.txt";  // URL where version.txt is hosted
-    private const string DownloadUrl = "https://example.com/AnimatedWallpaperInstaller.msi";  // URL for the installer
+    private const string VersionUrl = "https://github.com/thelonewolf39/AnimatedWallpaperApp/blob/master/version.txt";  // URL where version.txt is hosted
+    private const string DownloadUrl = "https://github.com/thelonewolf39/AnimatedWallpaperApp/blob/master/AnimatedWallpaperInstaller.msi";  // URL for the installer
 
     public static async Task CheckForUpdatesAsync()
     {
