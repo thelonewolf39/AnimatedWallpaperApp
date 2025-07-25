@@ -1,62 +1,35 @@
-# Animated Wallpaper App
+# Animated Wallpaper App v1.0.0
 
-## Overview
-This is a simple application that allows you to set animated GIFs or videos as your desktop wallpaper on Windows. It automatically checks for updates and installs the latest version silently in the background.
+Transform your desktop with **animated GIFs** or **videos** as your background using the **Animated Wallpaper App**.
 
-## Features
+## Why Choose Animated Wallpaper App?
+- **Dynamic Visuals**: Bring life to your desktop with seamless animated backgrounds.
+- **Super Easy Setup**: Install and get started in a few minutes—no technical knowledge required.
+- **Automatic Updates**: Always stay up-to-date with the latest version with no extra effort.
 
-- Set animated GIFs or videos as wallpaper.
-- Automatically checks for updates on startup.
-- Downloads and installs updates silently.
-- Runs as a background process (no UI required).
-- Easy-to-use installer with automatic startup integration.
+## Key Features
+- 🎨 Set animated **GIFs** as wallpaper.
+- 🌐 **Automatic updates** to keep your app fresh.
 
 ## Installation
 
-### 1. Download the Installer
-To install the **Animated Wallpaper App**, download the latest version from the [Releases](https://github.com/thelonewolf39/AnimatedWallpaperApp/releases) section.
+### 1. Download the latest version
+You can download the installer directly from the [Releases](https://github.com/thelonewolf39/AnimatedWallpaperApp/releases) page.
 
-### 2. Run the Installer
-- Double-click the installer (`AnimatedWallpaperInstaller.msi`) to start the installation process.
-- Follow the prompts to install the app to your desired location (default: `C:\Program Files\AnimatedWallpaperApp`).
+### 2. Run the installer
+Once downloaded, run the installer and follow the on-screen instructions.
 
-### 3. Set Up as a Startup Program
-The app will be added to your **Windows startup** automatically, so it will run in the background every time your computer starts.
+### 3. Set Animated Wallpapers
+Open the .exe installed (you have to create a shortcut first), and put in the path to your gif!
 
-## Usage
+## **[Frequently Asked Questions (FAQ)](https://github.com/thelonewolf39/AnimatedWallpaperApp/wiki/FAQ)**
 
-After installation, the app will automatically check for the latest version on startup. If a newer version is found, it will be downloaded and installed without any user interaction.
-
-## Automatic Updates
-
-The app automatically checks for updates each time it launches. If a new version is found, it will be downloaded and installed silently in the background without user input.
-
-- The app will check the version stored in `https://example.com/version.txt`.
-- If a newer version is available, it will download the installer from `https://example.com/AnimatedWallpaperInstaller.msi` and install it.
-- No user interaction is needed for updates.
-
-## Hosting Backend
-
-For automatic updates to work, the app requires the following:
-
-### 1. **`version.txt`** File
-This file contains the latest version number of the app. It should be hosted somewhere accessible via HTTP (e.g., on a web server or GitHub).
-
-#### Example of `version.txt`:
-1.0.0
-
-### 2. **Installer Download URL**
-The new installer (e.g., `.msi` or `.exe`) should be hosted on a server or a service that allows direct download links (e.g., GitHub, your own web server).
-
-For example, you can use:
-- **GitHub**: Store the `version.txt` and installer in your repository and make them accessible via a direct URL.
-- **Your own server**: Host the `version.txt` and installer on a web server.
-
-Example download URL for the installer:
-https://example.com/AnimatedWallpaperInstaller.msi
-
----
+Here are some common questions about using the app:
+- **How do I change the animated wallpaper after installation?**
+    - Follow Step 2 of Installation Guide above
+- **How do I update the app?**
+    - The app checks for updates automatically each time you start it.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
