@@ -1,4 +1,4 @@
-# Animated Wallpaper App v1.0.0
+# Animated Wallpaper App v1.1.0
 
 Transform your desktop with **animated GIFs** or **videos** as your background using the **Animated Wallpaper App**.
 
