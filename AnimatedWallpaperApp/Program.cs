@@ -1,128 +1,136 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
-class Program
+namespace AnimatedWallpaperApp
 {
-    static async Task Main(string[] args)
+    internal class Program
     {
-        // Check for updates
-        await UpdateChecker.CheckForUpdatesAsync();
-        // Introduction to the user
-        Console.WriteLine("Welcome to the Animated Wallpaper Setter!");
-        Console.WriteLine("This application will help you set an animated GIF as your wallpaper.");
+        private static readonly CancellationTokenSource _cts = new();
 
-        // Ask for the GIF file path
-        Console.WriteLine("Please enter the full path of the GIF file you want to use as the wallpaper:");
-
-        // Get the GIF path from user input
-        string gifFilePath = Console.ReadLine();
-
-        // Validate the file path and handle setting the wallpaper
-        AnimatedWallpaper wallpaper = new AnimatedWallpaper(gifFilePath);
-        if (wallpaper.IsValid)
+        private static async Task<int> Main()
         {
-            wallpaper.Start();
-        }
-        else
-        {
-            Console.WriteLine("Invalid file path or unsupported file type. Please provide a valid GIF.");
-        }
-
-        // Instructions to the user
-        Console.WriteLine("The wallpaper will now be set to the GIF you provided and updated every frame.");
-        Console.WriteLine("Press 'q' and hit Enter to quit the application at any time.");
-
-        // Use Console.ReadLine to wait for user input and safely handle exit
-        while (true)
-        {
-            string userInput = Console.ReadLine();
-            if (userInput?.ToLower() == "q")
+            Console.CancelKeyPress += (_, e) =>
             {
-                Console.WriteLine("Exiting the wallpaper setter.");
-                break; // Exit the loop and close the app
-            }
-        }
+                e.Cancel = true;            // prevent hard kill
+                _cts.Cancel();
+            };
 
-        // Clean up resources when the user exits
-        wallpaper.Dispose();
-        Console.WriteLine("Application closed.");
-    }
-}
-
-public class UpdateChecker
-{
-    private const string CurrentVersion = "1.0.0";  // The current version of the app
-    private const string VersionUrl = "https://github.com/thelonewolf39/AnimatedWallpaperApp/blob/master/version.txt";  // URL where version.txt is hosted
-    private const string DownloadUrl = "https://github.com/thelonewolf39/AnimatedWallpaperApp/blob/master/AnimatedWallpaperInstaller.msi";  // URL for the installer
-
-    public static async Task CheckForUpdatesAsync()
-    {
-        try
-        {
-            // Step 1: Check for the latest version from the remote file
-            var latestVersion = await GetLatestVersionAsync();
-
-            // Step 2: Compare the latest version with the current version
-            if (latestVersion != CurrentVersion)
+            try
             {
-                Console.WriteLine($"New version {latestVersion} available! Updating...");
-                await DownloadAndInstallUpdateAsync();
+                await UpdateChecker.CheckForUpdatesAsync(_cts.Token);
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("You already have the latest version.");
+                Console.WriteLine($"Update check failed: {ex.Message}");
             }
+
+            Console.WriteLine("Welcome to the Animated Wallpaper Setter!");
+            var gifPath = RequestGifPath();
+            if (gifPath is null) return 1;
+
+            using var wallpaper = new AnimatedWallpaper(gifPath);
+            if (!wallpaper.IsValid)
+            {
+                Console.WriteLine("Invalid file or not a GIF.");
+                return 1;
+            }
+
+            try
+            {
+                wallpaper.Start();
+                Console.WriteLine("Press 'q' then Enter (or Ctrl+C) to quit.");
+
+                while (!_cts.IsCancellationRequested)
+                {
+                    var line = Console.ReadLine();
+                    if (string.Equals(line, "q", StringComparison.OrdinalIgnoreCase))
+                        break;
+                }
+            }
+            finally
+            {
+                // AnimatedWallpaper.Dispose() called by await using
+            }
+
+            Console.WriteLine("Application closed.");
+            return 0;
         }
-        catch (Exception ex)
+
+        private static string RequestGifPath()
         {
-            Console.WriteLine($"Error checking for updates: {ex.Message}");
+            Console.WriteLine("Enter full path of the GIF to use:");
+            var input = Console.ReadLine()?.Trim('"', ' ');
+
+            if (string.IsNullOrWhiteSpace(input) ||
+                !File.Exists(input) ||
+                !string.Equals(Path.GetExtension(input), ".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("❌ File not found or not a .gif");
+                return null;
+            }
+
+            return Path.GetFullPath(input);
         }
     }
 
-    private static async Task<string> GetLatestVersionAsync()
+    public static class UpdateChecker
     {
-        using (var client = new HttpClient())
+        private const string CurrentVersion = "1.1.0";
+
+        private static readonly HttpClient _http =
+            new() { Timeout = TimeSpan.FromSeconds(10) };
+
+        private const string VersionUrl =
+            "https://raw.githubusercontent.com/thelonewolf39/AnimatedWallpaperApp/master/version.txt";
+
+        private const string DownloadUrl =
+            "https://github.com/thelonewolf39/AnimatedWallpaperApp/releases/latest/download/AnimatedWallpaperInstaller.msi";
+
+        public static async Task CheckForUpdatesAsync(CancellationToken ct)
         {
-            // Step 1: Download the version file from the server
-            var versionText = await client.GetStringAsync(VersionUrl);
-            return versionText.Trim();  // Remove any extra whitespace
-        }
-    }
+            string latestText;
+            try
+            {
+                latestText = (await _http.GetStringAsync(VersionUrl, ct)).Trim();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Version check failed: {ex.Message}");
+                return;
+            }
 
-    private static async Task DownloadAndInstallUpdateAsync()
-    {
-        using (var client = new HttpClient())
-        {
-            // Step 2: Download the new installer
-            var installerFile = await client.GetByteArrayAsync(DownloadUrl);
+            if (!Version.TryParse(latestText, out var latest) ||
+                !Version.TryParse(CurrentVersion, out var current))
+            {
+                Console.WriteLine("⚠️  Could not parse version numbers.");
+                return;
+            }
 
-            // Save the installer to a temporary location
-            string tempFilePath = Path.Combine(Path.GetTempPath(), "AnimatedWallpaperInstaller.msi");
-            await File.WriteAllBytesAsync(tempFilePath, installerFile);
+            if (latest <= current)
+            {
+                Console.WriteLine("Already on latest version.");
+                return;
+            }
 
-            // Step 3: Run the installer to update the app
-            InstallUpdate(tempFilePath);
-        }
-    }
+            Console.WriteLine($"New version {latest} available – downloading…");
 
-    private static void InstallUpdate(string installerPath)
-    {
-        try
-        {
-            Console.WriteLine("Installing the new version...");
-            Process.Start(new ProcessStartInfo(installerPath)
+            var installerBytes = await _http.GetByteArrayAsync(DownloadUrl, ct);
+            var msiPath = Path.Combine(Path.GetTempPath(), "AnimatedWallpaperInstaller.msi");
+            await File.WriteAllBytesAsync(msiPath, installerBytes, ct);
+
+            Console.WriteLine("Launching installer…");
+            Process.Start(new ProcessStartInfo(msiPath)
             {
                 UseShellExecute = true,
-                Verb = "runas"  // Run with elevated privileges
+                Verb = "runas"
             });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error installing update: {ex.Message}");
+
+            // Exit current process so installer can overwrite files
+            Environment.Exit(0);
         }
     }
-
 }
